@@ -1,0 +1,142 @@
+/* Resume Tailor — WeasyPrint stylesheet
+   Targets standard markdown-it HTML output (h1, h2, p, ul, li, hr, strong)
+   Visual spec: US Letter, Inter font, black-only (ATS safe)
+   Calibrated for 1-page fit at 10pt body with fixed template slots */
+
+@font-face {
+  font-family: "Inter";
+  src: url("https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiJ-Ek-_EeA.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+}
+
+@page {
+  size: letter;
+  margin: 0.55in 0.65in;
+}
+
+/* Full reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Inter", Arial, Helvetica, sans-serif;
+  font-size: 10pt;
+  line-height: 1.3;
+  color: #000;
+}
+
+/* ─── HEADER ─────────────────────────────────────────────────────────── */
+
+/* h1 = name */
+h1 {
+  font-size: 20pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 1pt;
+}
+
+/* First p after h1 = title line */
+h1 + p {
+  font-size: 9.5pt;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 4pt;
+}
+
+/* Second p = contact line(s) */
+h1 + p + p {
+  font-size: 8.5pt;
+  margin-bottom: 1pt;
+}
+
+h1 + p + p + p {
+  font-size: 8.5pt;
+  margin-bottom: 3pt;
+}
+
+/* ─── DIVIDER ─────────────────────────────────────────────────────────── */
+
+hr {
+  border: none;
+  border-top: 0.5pt solid #111;
+  margin: 4pt 0;
+}
+
+/* ─── SUMMARY (first p after first hr) ──────────────────────────────── */
+
+hr + p {
+  font-size: 10pt;
+  line-height: 1.35;
+  margin-bottom: 2pt;
+}
+
+/* ─── SECTION HEADERS (h2) ───────────────────────────────────────────── */
+
+h2 {
+  font-size: 8.5pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  border-bottom: 0.5pt solid #111;
+  padding-bottom: 1.5pt;
+  margin-top: 7pt;
+  margin-bottom: 3pt;
+}
+
+/* ─── BODY PARAGRAPHS (experience bullets, skill lines, etc.) ─────────── */
+
+p {
+  font-size: 10pt;
+  line-height: 1.3;
+  margin-bottom: 2pt;
+}
+
+p strong {
+  font-weight: 600;
+}
+
+/* ─── UNORDERED LISTS (used for training/achievements if formatted as -) */
+
+ul {
+  padding-left: 12pt;
+  margin-bottom: 2pt;
+}
+
+li {
+  font-size: 10pt;
+  line-height: 1.3;
+  margin-bottom: 1.5pt;
+}
+
+li strong {
+  font-weight: 600;
+}
+
+/* ─── COVER LETTER OVERRIDES ─────────────────────────────────────────── */
+
+body.cover-letter {
+  font-size: 11pt;
+  line-height: 1.5;
+}
+
+body.cover-letter p {
+  font-size: 11pt;
+  margin-bottom: 11pt;
+}
+
+body.cover-letter h1,
+body.cover-letter h1 + p,
+body.cover-letter h1 + p + p,
+body.cover-letter h1 + p + p + p {
+  font-size: 11pt;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  margin-bottom: 3pt;
+}

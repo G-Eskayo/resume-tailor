@@ -10,10 +10,9 @@ A Claude Code skill that maintains a master resume and generates tailored 1-page
 
 - **Researches** the company, role, and contacts before tailoring
 - **Semantically matches** your experience to the job description (concepts, not keywords)
-- **Scores and selects** experience entries: relevance × 0.7 + recency × 0.3
-- **Generates** a 1-page resume enforced by fixed template slot caps (no render-and-trim)
-- **Renders PDF** via WeasyPrint — clean, ATS-safe single-column layout
-- **Writes cover letters** grounded in company research — no "I am writing to apply for..." openers
+- **Scores and curates** experience entries: relevance × 0.7 + recency × 0.3 — no fixed item counts, the strongest entries win and a bidirectional auto-fit render step (13pt down to 8.5pt) guarantees one page regardless of how much content is genuinely strong
+- **Renders PDF** via WeasyPrint — system-font bold/italic (a broken `@font-face` silently made every resume's bold/italic render as plain text until this was caught), a two-column header, and one consistent divider mechanism across every section
+- **Writes cover letters** grounded in company research and *your actual story* — the strongest-match paragraph is drafted from what you say happened, not synthesized from resume facts alone; no "I am writing to apply for..." openers
 - **Maintains a master resume** locally: add entries, merge uploaded resumes, parse transcripts
 
 ---
@@ -85,7 +84,7 @@ Add to your `~/.claude/CLAUDE.md` skill routing table:
 2. Researches the company: mission, culture, tech stack, recent news, contacts
 3. Extracts semantic concepts from the JD — not keywords, but ideas, domains, responsibility types
 4. Scores every master resume entry on relevance (0–1) and recency (0–1), combined as `relevance × 0.7 + recency × 0.3`
-5. Selects the top 4 roles and 2 projects
+5. Curates by score — Experience, Projects, Summary, and Education are required; Skills/Training/Achievements only make the cut if genuinely strong. No fixed role/project counts; the renderer's auto-fit handles page-length, not content curation
 6. Mirrors the company's language and surfaces the experiences most likely to resonate
 7. Writes resume.md → renders resume.pdf
 

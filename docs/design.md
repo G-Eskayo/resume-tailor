@@ -129,7 +129,7 @@ recency_score = 0.20 if ended > 6 years ago
 combined = (relevance × 0.7) + (recency × 0.3)
 ```
 
-Top 4 roles and top 2 projects by combined score fill the template slots. If two entries score equally, the more recent wins.
+Score ranks entries for curation; it is not a cutoff. **Revised 2026-07-02:** no fixed count of roles/projects fills the template — Experience is one entry per company (synthesized overview, not per-bullet), Projects includes however many are genuinely strong. If two entries score equally, the more recent wins ties in ordering.
 
 ### 3.4 Aerospace crossover signal
 
@@ -140,20 +140,23 @@ When the JD contains any of: systems, engineering, simulation, physics, aerospac
 
 ---
 
-## 4. Fixed Template Slots
+## 4. Template Slots — revised 2026-07-02
+
+**Required, always present:** Header, Summary, Professional Experience, Projects, Education.
+**Optional, included only when master.md has genuinely strong, JD-relevant content:** Technical Skills, Soft Skills, Relevant Training, Achievements — cut before padding.
 
 ```
 HEADER          → always full (from frontmatter, never truncated)
 SUMMARY         → 2–3 sentences, generated per role
-TECH SKILLS     → max 4 categories × 4 items = 16 items max
-SOFT SKILLS     → max 6 items, JD-matched
-EXPERIENCE      → max 4 roles × 3 bullets = 12 bullets max
-PROJECTS        → max 2 × 2 bullets = 4 bullets max
-EDUCATION       → 1 line: Degree | Institution | Year (no GPA, no honors)
-CERTIFICATIONS  → max 3, omit section entirely if empty
+TECH SKILLS     → optional; ~3–4 categories × ~4 items if included
+SOFT SKILLS     → optional; up to ~6 items, JD-matched
+EXPERIENCE      → required; ~4 roles, one synthesized overview paragraph each (not per-bullet), curated by strength
+PROJECTS        → required, highest visual priority; however many are genuinely strong × ~2 bullets each, curated by strength — no count target
+EDUCATION       → required; 1 line: Degree | Institution | Year (no GPA, no honors)
+CERTIFICATIONS  → optional; up to ~3, omit entirely if empty
 ```
 
-These caps are calibrated to fill one US Letter page at 10.5pt body text with the CSS in `template/resume.css`.
+**Why this changed:** the original hard caps (§4 v1) were meant to guarantee 1-page fit, but they were violated in practice (a 3rd project was added mid-session, pushing the Charter-Spectrum resume to 2 pages) and they fight the actual goal — building the *strongest* resume from master.md, not filling every slot to a quota. Page-fit is no longer content's job; it's the renderer's (see §7, auto-shrink-to-fit). Content's job is to tell one coherent story: competent engineer, easy to work with, strong team addition. The counts above are what "well-curated" typically looks like, not limits to hit or avoid.
 
 ---
 
@@ -175,6 +178,14 @@ PARAGRAPH 2 — STRONGEST MATCH (4–5 sentences)
   Concrete: what was built, what was the impact, what was the scale.
   Use the JD's own language where it fits naturally.
 
+  **Added 2026-07-02 — mandatory pre-step:** do NOT draft this paragraph from research.md/
+  master.md facts alone. Restating resume bullets in prose is exactly what reads as generic/
+  AI-written (confirmed both by user feedback on a real draft and by Ask a Manager's core
+  finding: a good letter tells the reader something the resume can't). Before drafting,
+  explicitly ask the user for the real story behind the chosen experience — what was hard,
+  surprising, or required a judgment call, not just the outcome. Draft from their actual
+  words, not synthesized-sounding facts.
+
 PARAGRAPH 3 — UNIQUE ANGLE (3–4 sentences)
   What Giles brings that a typical candidate doesn't.
   Lead with the aerospace + CS crossover when JD has any engineering/systems angle.
@@ -190,7 +201,11 @@ PARAGRAPH 4 — CLOSE (2–3 sentences)
 
 ## 6. Prototype Output Sample
 
-**STATUS: LOCKED ✓ — approved 2026-06-29. Do not modify without explicit re-approval.**
+**STATUS: SUPERSEDED 2026-07-02 — re-approval given in session (two-column header, no manual
+`---` dividers between sections, no hard content caps, blue accent color). The single-column
+plain-text mockup below is stale; it predates the visual spec changes in §7. Section order and
+content rules (§ requirements.md 6.1–6.2) still apply. New locked sample TBD once
+`template/resume.css` v2 is rendered and approved.**
 
 Format derived from Gil's AI Engineer resume (the resume that landed his current job). Additions vs. source: Soft Skills section, Engineering & Domain Knowledge skills category (aerospace background), dynamic title line.
 
@@ -278,23 +293,36 @@ Eagle Scout – Highest rank in Boy Scouts; 31 merit badges and two Eagle Palms
 
 ---
 
-## 7. PDF Visual Specification (`template/resume.css`)
+## 7. PDF Visual Specification (`template/resume.css`) — revised 2026-07-02
 
 | Property | Value |
 |---|---|
 | Page size | US Letter (8.5" × 11") |
-| Margins | 0.6" top/bottom, 0.65" left/right |
-| Name | 22pt, bold, all-caps |
-| Section headers | 9pt, bold, all-caps, 1.5px letter-spacing |
-| Body text | 10.5pt |
-| Bullet text | 10pt |
-| Line height | 1.35 |
-| Dividers | 0.5pt solid #222 |
-| Accent color | None — black only (ATS safe) |
-| Font | Inter (embed via @font-face); system sans-serif fallback |
+| Margins | scale with the auto-fit ladder (0.25pt body-size increments, 13pt ceiling down to 8.5pt floor — see architecture.md ADR-006) |
+| Header layout | two-column flex row: name+title left, contact links right (bounded exception to NFR-02, see requirements.md) |
+| Name | starts at 20pt, bold, all-caps |
+| Section headers | 8.5pt, bold, all-caps, 1.5px letter-spacing, `border-bottom` — the **sole** divider mechanism |
+| Body text | starts at 10pt |
+| Line height | starts at 1.3 |
+| Dividers | h2 `border-bottom` only. Manual `---` thematic breaks between sections are **removed** from the template — they were the cause of the inconsistent "some sections have a line, some don't" bug (some sections got a hand-placed `<hr>`, others only had the (invisible-looking, attached-to-heading-text) h2 underline). One mechanism, always applied, can't drift out of sync. |
+| Accent color | a professional blue accent (exact hex TBD in CSS), applied to name text and/or h2 border color. Body copy stays black for print contrast/readability. **Correction to prior spec:** color does not affect ATS parsing — parsers read the text stream, not pixel color — so "black only (ATS safe)" was based on an incorrect premise. The real ATS risk is multi-column *body* layout (§ NFR-02), not color. |
+| Font | System sans-serif stack (`-apple-system, "Helvetica Neue", Helvetica, Arial`) — no custom @font-face. **Revised 2026-07-02:** the prior Inter @font-face falsely claimed weight range 100-900/normal style for a single static regular file; WeasyPrint matched bold/italic requests to it anyway instead of falling through, so every `<strong>`/`<em>` silently rendered as plain text. Resolves the open Font decision item below in favor of offline-safe/reliable. |
 | Bullet symbol | `•` en-dash style, not `–` |
+| Single-page enforcement | **Auto-shrink-to-fit**, not fixed caps: render, check WeasyPrint page count, step font-size/margin/line-height down through a small ladder until page count is 1 or a legibility floor is hit (below which: warn the user and suggest trimming content rather than shrinking further). Replaces the old "content capped to guarantee 1 page" approach, which broke when content exceeded the caps mid-session. |
 
-Cover letter PDF uses same font and margins. No divider lines. 12pt body text.
+Cover letter shares the resume's font, accent color, and header treatment (name/date block styled to match) so the two documents read as one visual system — this was previously undocumented/inconsistent (cover letter CSS overrode font-size only, no shared accent or header style).
+
+### 7.1 Visual hierarchy pass — revised 2026-07-02 (second pass, post-first-render feedback)
+
+The first render fixed structural consistency (one divider mechanism, 1-page fit) but was visually flat — everything read as the same weight of bulleted text, so Experience and Projects looked like duplicates of each other, and nothing signaled which section mattered most. Fixes:
+
+| Property | Value |
+|---|---|
+| Experience format | One entry per company (bold name + italic title/dates), one synthesized overview paragraph — not repeated `• **Company:**` bullets. See requirements.md §6.2. This was the actual duplication bug: Experience and Projects had converged on the same "bold label + bullets" shape. |
+| Projects visual priority | Project name paragraphs get a dedicated `.entry-title` class (post-processed via BeautifulSoup, not just `<strong>`): larger font-size than body text, bold. Tech stack + rough date share an italic parenthetical directly after the name (e.g. `**Cost Intelligence Platform** *(Lambda, EventBridge, Aurora Serverless v2 — 2026)*`) — signals recency without a formal dated-entry look. The `PROJECTS` `h2` itself also gets slightly stronger treatment than other section headers (accent-colored text, not just the underline) to read as the resume's highest-priority section. |
+| Bold/italic system | Bold = names (company, project). Italic = context (title, dates, tech stack). This pairing is applied consistently everywhere it appears, not just in Projects — Experience company/title line uses the same convention. |
+| Portfolio link | No `Portfolio:` label — the bare domain (`gileskayo.me`) is self-evidently a portfolio link; the label was redundant. |
+| Divider rendering fix | `h2 { border-bottom }` is a hairline border, and WeasyPrint hairline borders can land on different sub-pixel Y-offsets depending on how much content precedes them, making some render crisper/thinner than others (observed under Soft Skills/Achievements — less content above them shifted their border to a different fractional position than sections with more preceding text). Switched to `box-shadow: 0 1pt 0 0 <color>` on `h2`, which renders as a filled rectangle rather than a stroked border and isn't subject to the same anti-aliasing variance — thickness now genuinely uniform regardless of position on the page. |
 
 ---
 
@@ -325,5 +353,5 @@ Ambiguous = same company + overlapping dates but different title or significantl
 - [ ] **Transcript uploaded** — aerospace courses extracted into master
 - [ ] **Location** — confirm city/state for frontmatter header
 - [ ] **WeasyPrint install confirmed** — `~/.agents/venv/bin/pip install weasyprint`
-- [ ] **Font decision** — Inter via @font-face (requires network on first render) or system font (offline-safe)?
+- [x] **Font decision** — RESOLVED 2026-07-02: system font (offline-safe), after the Inter @font-face was found to silently break all bold/italic rendering. See §7.
 - [ ] **Repo created** — `G-Eskayo/resume-tailor` on GitHub

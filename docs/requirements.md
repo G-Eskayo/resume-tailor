@@ -43,7 +43,8 @@ A Claude Code skill that maintains a comprehensive master resume and generates t
 | FR-13 | The skill SHALL incorporate company research findings into tailoring decisions: mirror the company's language, emphasise experiences that align with their known tech stack or domain, signal cultural fit. |
 | FR-14 | The skill SHALL produce a tailored resume in both Markdown and PDF formats. |
 | FR-15 | All PDF outputs SHALL use the same visual template. |
-| FR-16 | The resume output SHALL always fit on exactly one page, enforced by fixed template slot limits (see Design Doc §4). |
+| FR-16 | The resume output SHALL always fit on exactly one page, enforced by a bidirectional auto-fit render step (body text searched from 13pt down to 8.5pt in 0.25pt increments, every other size derived proportionally, keeping the largest step that still fits 1 page — see Design Doc §4 and §7, architecture.md ADR-006). Content is no longer capped by fixed per-section item limits; section strength/relevance curation is what keeps content lean (see §6.2, revised 2026-07-02). |
+| FR-16a | **Added 2026-07-02.** If content still fails to fill a reasonable fraction of the page even at the 13pt ceiling (i.e. content was never close to overflowing at any tested size — `CANDIDACY_FLAG_RATIO` in `render_pdf.py`, currently 0.65), the skill SHALL surface this to the user directly as a possible fit signal ("master.md may not have enough genuinely JD-relevant content for this role"), not silently render a sparse page or pad it artificially. Not a hard block — FR-11's years-of-experience-agnostic matching still applies — but the user should get to make that call knowingly. |
 
 ### 2.4 Cover Letter
 
@@ -97,7 +98,7 @@ Every application generates a complete package at `~/.claude/resume/tailored/[co
 | ID | Requirement |
 |---|---|
 | NFR-01 | The tailored output SHALL be visually identical in format regardless of role or company. |
-| NFR-02 | The PDF SHALL use a single-column layout for ATS compatibility. |
+| NFR-02 | The PDF body (Summary through Achievements) SHALL use a single-column layout for ATS compatibility — multi-column body text reliably scrambles extraction order in many parsers. **Revised 2026-07-02:** the header block only (name/title/contact, ≤4 short lines) MAY use a two-column flex layout, since the underlying text order in the PDF's content stream stays linear (name → title → contact) regardless of visual column position — this is a bounded, low-risk exception, not a relaxation of the body rule. |
 | NFR-03 | The skill SHALL require no Anthropic API key — it runs as a Claude Code skill using the host session. |
 | NFR-04 | The public GitHub repo (`G-Eskayo/resume-tailor`) SHALL contain zero personal data. |
 | NFR-05 | All scripts SHALL run via `~/.agents/venv/bin/python`. |
@@ -121,6 +122,8 @@ Derived from Gil's actual resume format.
 
 ### 6.2 Content Rules
 
+**Revised 2026-07-02:** per-section hard numeric caps (below) are replaced by a required-sections rule + strength-based curation. **Required, always present:** Summary, Professional Experience, Projects, Education. **Optional, included only if the master resume has genuinely strong content for them:** Technical Skills, Soft Skills, Relevant Training, Achievements — cut before padding. The resume's job is to tell one coherent story ("competent engineer, easy to work with, strong addition to the team"), not to fill every slot. Item counts below are guidance for what "strong curation" typically looks like, not hard limits — the auto-shrink-to-fit render step (FR-16) is what actually enforces the 1-page constraint, so content length is no longer the thing preventing overflow.
+
 **Header**
 - Full name in largest font
 - Title line: dynamically set to the target role's title (e.g. "SENIOR ML ENGINEER", "BACKEND ENGINEER"). Derived from the JD title; if ambiguous, Claude infers the closest match. Fallback: master resume default title.
@@ -134,37 +137,49 @@ Derived from Gil's actual resume format.
 
 **Technical Skills**
 - Grouped by category (Languages, Frameworks, Tools, Platforms)
-- Maximum 4 categories, maximum 4 items per category
+- Typically 3–4 categories, ~4 items per category — guidance, not a hard cap (see §6.2 revision)
 - No proficiency bars or ratings — listing a skill implies competency
 
 **Soft Skills**
-- Flat list, maximum 6 items
+- Flat list, typically up to 6 items — guidance, not a hard cap
 - Each item is a single noun or noun phrase ("Cross-functional collaboration", not "I collaborate well")
 - Selected based on JD language — if JD emphasises leadership, leadership-adjacent skills surface
 
-**Experience**
-- Maximum 4 entries
-- Format: inline bullet-point style — `• **Company Name:** narrative description of role and impact`
-- Maximum 3 bullets per company
-- Each bullet is a self-contained achievement sentence starting with the bold company name
-- Every bullet uses active, delivered language — no "Responsible for…"
+**Experience — revised 2026-07-02**
+- Typically up to 4 entries, curated by strength — guidance, not a hard cap
+- **One entry per company, not one entry per achievement.** Format: `**Company Name** — *Title, Dates*` on its own line, followed by ONE synthesized overview paragraph (2–4 sentences) covering role scope, tasks, and value delivered.
+- **Do not repeat the bold company name on multiple separate lines within the same job.** The earlier per-bullet format (`• **Company Name:** ...` repeated 3× for one job) reads as three separate entries and visually duplicates the Projects section's structure — Experience should read as a narrative overview per role; Projects is where itemized, bulleted achievements belong. If a company has genuinely distinct roles/dates (e.g. promoted, or two separate stints), those get separate entries; multiple bullets for one continuous role do not.
+- Master.md keeps its bullets as raw material (no restriction there) — the tailoring step synthesizes them into one flowing overview paragraph per company, it does not just relabel each bullet.
+- Every sentence uses active, delivered language — no "Responsible for…"
 - Quantified impact included wherever the master resume provides numbers
 
 **Projects**
-- Maximum 2 projects
-- Format: `Project Name` with tech stack in parentheses
-- Maximum 2 bullets per project
+- Required section (§6.2), the resume's highest-visual-priority section (bold, larger project names; see design.md §7) — curated by strength, no count target
+- Format: `**Project Name** *(tech stack — rough date/timeframe)*` — tech stack and a rough date (year, or "Month Year" if a project is worth that precision) share the italic parenthetical, signaling recency without reading as a formal dated entry. Year-level granularity is fine — the goal is "this is current/relevant," not a precise timeline.
+- Typically up to 2 bullets per project — guidance, not a hard cap
 - Include GitHub link or live URL if present in master
 
 **Education**
 - Always included, always at the bottom
-- Format: `Degree, Major | Institution | Year` — one line, nothing else
+- Format: `**Degree, Major** – Institution | Year` — one line, degree bolded (Pattern B with a bold label, see §6.2 Formatting system below), nothing else
 - No GPA, no honors, no coursework — experience and skills speak louder
 - Institution name only; no ranking, no prestige signals
 
-**Certifications**
-- Maximum 3, only if present in master
-- Format: `Certification Name | Issuer | Year`
+**Relevant Training (certifications/self-directed learning)**
+- Typically up to 3, only if present in master and genuinely relevant — guidance, not a hard cap
+- Format: `• **Certification Name** – Issuer – one-line description of what was built/learned`
+
+**Achievements**
+- Include if genuinely relevant to the role (leadership/character signals) — optional, not always present
+- Format: `• **Achievement Title** – detail`
+
+### 6.2.1 Formatting system — added 2026-07-02
+
+Every section is exactly one of two patterns — no per-section improvisation:
+- **Pattern A (itemized list):** 2+ discrete parallel entries (skill categories, certs, achievements). `•` bullet, bold the entry's label, then the detail. Technical Skills, Relevant Training, Achievements.
+- **Pattern B (flowing content):** one paragraph or one line, not a list. No bullet. Summary, Experience overview paragraph, Soft Skills (single descriptor line — intentionally unitemized), Education (bold the degree as the line's "label," no bullet since it's one line).
+
+This was direct user feedback 2026-07-02 — sections had drifted into inconsistent ad hoc formatting (some bulleted, some not; some bold, some not) with no underlying logic.
 
 ### 6.3 Format Approval Process
 

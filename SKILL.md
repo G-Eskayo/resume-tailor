@@ -1,3 +1,9 @@
+---
+name: resume-tailor
+description: Maintain a master resume and generate tailored 1-page application packages from job descriptions. Domain-siloed — job-search specific, local-only (master resume never leaves the machine). Use for /tailor, /add-to-master, /merge-resume, /parse-transcript.
+tags: [intent:resume, intent:tailor, intent:document, type:skill]
+---
+
 # Resume Tailor Skill
 
 **Triggers:** `/tailor`, `/add-to-master`, `/merge-resume`, `/parse-transcript`  
@@ -62,7 +68,9 @@ combined = (relevance × 0.7) + (recency × 0.3)
 recency: 1.0 = current | 0.85 = <1yr | 0.65 = 1–3yr | 0.40 = 3–6yr | 0.20 = >6yr
 relevance: 1.0 = direct match | 0.6 = transferable | 0.3 = adjacent
 ```
-Select top 4 roles and top 2 projects. Ties broken by recency.
+**Revised 2026-07-02 — no hard item caps.** Use the score to rank and curate, not to cut at a fixed count. Required sections (always include): Summary, Professional Experience, Projects, Education. Optional sections (include only if genuinely strong/JD-relevant; cut before padding): Technical Skills, Soft Skills, Relevant Training, Achievements. Typical good curation lands around 4 roles and however many projects are genuinely strong — that's a description of what good output looks like, not a count to hit. `render_pdf.py` now auto-shrinks to fit 1 page (Phase 5), so content length is no longer what keeps the resume on one page — curation quality is. Ties broken by recency.
+
+**Preserve exact quantities when condensing master.md bullets.** Known failure mode from 2026-07-02: "14 charts, 2 tabs" (of one dashboard) got compressed into "14 dashboards" while tailoring — same number, false claim. Before writing a shortened bullet, check every number/unit in it against the master.md source sentence. If a number can't survive compression without becoming misleading, cut the number rather than let it drift.
 
 **Aerospace crossover signal:** If JD has any aerospace/defense/systems keyword → surface the aerospace background in:
 - The summary (explicitly mention dual-discipline background)
@@ -84,23 +92,23 @@ Write `~/.claude/resume/tailored/[slug]-[date]/resume.md` using this exact templ
 
 [JD-DERIVED TITLE — ALL CAPS]
 
-Portfolio: gileskayo.me  |  geskayo@gmail.com  |  linkedin.com/in/gileskayo
+gileskayo.me  |  geskayo@gmail.com  |  linkedin.com/in/gileskayo
 
 (650) 867-2527  |  github.com/G-Eskayo  |  U.S. Citizen[  |  Security Clearance: Secret (Reinstatable) — if defense/gov role]
-
----
 
 [SUMMARY — 2–3 sentences. Tailored to the specific role. No "I am a..." opener. Lead with what you build, then the crossover if relevant, then the current work.]
 
 ## PROFESSIONAL EXPERIENCE
 
-• **[Company Name]:** [narrative — action verbs, quantified impact where available, mirrors JD language]
+**[Company Name]** *[Title, Dates]*
 
-• **[Company Name]:** [bullet 2 — each role gets its own blank-line-separated paragraph]
+[ONE synthesized overview paragraph, 2–4 sentences: role scope, tasks, and value delivered — action verbs, quantified impact where available, mirrors JD language. Do NOT split this into multiple bullets that each repeat the bold company name — that's the Projects section's shape, not this one. Combine what master.md lists as separate bullets for this role into one flowing paragraph.]
 
-• **[Company Name]:** [bullet 3 — up to 3 bullets per company, each separated by blank line]
+**[Company Name]** *[Title, Dates]*
 
-[Max 4 roles total. Each additional bullet for a company: also blank-line separated.]
+[overview paragraph for the next role]
+
+[Required section. Curate to the strongest ~4 roles — not a hard cap, a description of good curation. One entry per company/role, not per achievement. If a company genuinely has two distinct stints (e.g. promoted, or left and came back), those are two entries; multiple bullets for one continuous role are not.]
 
 ## TECHNICAL SKILLS
 
@@ -112,61 +120,59 @@ Portfolio: gileskayo.me  |  geskayo@gmail.com  |  linkedin.com/in/gileskayo
 
 • **[Category] –** [skill], [skill], [skill], [skill]
 
-[Max 4 categories. Include Cybersecurity if JD is security-relevant. Include Engineering & Domain Knowledge if aerospace signal detected.]
+[Optional section — include only if genuinely strong/JD-relevant. Typically ~3–4 categories. Include Cybersecurity if JD is security-relevant. Include Engineering & Domain Knowledge if aerospace signal detected.]
 
 ## SOFT SKILLS
 
-[skill]  ·  [skill]  ·  [skill]  ·  [skill]  ·  [skill]  ·  [skill — max 6, JD-matched, on one line]
-
----
+[skill]  ·  [skill]  ·  [skill]  ·  [skill]  ·  [skill]  ·  [skill — up to ~6, JD-matched, on one line]
 
 ## PROJECTS
 
-**[Project Name — bold, no bullet]** ([brief tech stack or award context])
+**[Project Name]** *([tech stack] — [rough date, e.g. "2026" or "Q2 2026"])*
 
 • [bullet 1 — what was built, impact, scale]
 
 • [bullet 2 — optional, max 2 per project]
 
-**[Project Name]** ([tech stack])
+**[Project Name]** *([tech stack] — [rough date])*
 
 • [bullet 1]
 
-[Max 2 projects.]
-
----
+[Required section, and the resume's highest-visual-priority one (render_pdf.py gives project names a larger/bolder treatment than other bold text — see design.md §7.1). Include the strongest, JD-relevant projects — no fixed count, curated by strength. Always include a rough date in the italic parenthetical alongside tech stack — signals recency; year-level precision is enough, don't make it look like a formal dated entry.]
 
 ## EDUCATION
 
-B.S. Computer Science – University of Colorado Boulder  |  August 2025
+**B.S. Computer Science** – University of Colorado Boulder  |  August 2025
 
 ## RELEVANT TRAINING
 
-• [Cert name] – [Issuer] – [one-line description of what was built/learned]
+• **[Cert name]** – [Issuer] – [one-line description of what was built/learned]
 
-• [Cert name] – [Issuer] – [description]
+• **[Cert name]** – [Issuer] – [description]
 
-• [Cert name] – [Issuer] – [description]
+• **[Cert name]** – [Issuer] – [description]
 
-[Max 3 certs — select most relevant to JD. Each cert on its own blank-line-separated paragraph.]
+[Optional section — include only if present in master and genuinely relevant. Typically up to ~3, most relevant to JD. Each cert on its own blank-line-separated paragraph.]
 
 ## ACHIEVEMENTS
 
-U.S. Armed Forces Veteran – Chemical, Biological, Radiological & Nuclear (CBRN) Defense Specialist[, Security Clearance: Secret (Reinstatable) — append if defense/gov role]
+• **U.S. Armed Forces Veteran** – Chemical, Biological, Radiological & Nuclear (CBRN) Defense Specialist[, Security Clearance: Secret (Reinstatable) — append if defense/gov role]
 
-Eagle Scout – Highest rank in Boy Scouts; 31 merit badges and two Eagle Palms
+• **Eagle Scout** – Highest rank in Boy Scouts; 31 merit badges and two Eagle Palms
 
-[Include both for leadership/character-signal roles. Include just Veteran for defense/gov roles if space is tight.]
+[Include both for leadership/character-signal roles. Include just Veteran for defense/gov roles if space is tight. Bulleted + bold lead-in, same pattern as Technical Skills/Relevant Training — see the "Formatting system" note below Slot caps.]
 ```
 
-**Slot caps (non-negotiable):**
-- Summary: 2–3 sentences
-- Tech Skills: max 4 categories × 4 items
-- Soft Skills: max 6 items
-- Experience: max 4 roles × 3 bullets
-- Projects: max 2 × 2 bullets
-- Certs: max 3
-- Education: 1 line only
+**Revised 2026-07-02 — required sections and guidance, not hard caps:**
+- Required, always present: Summary (2–3 sentences), Professional Experience, Projects, Education (1 line only — this one stays a hard format rule, not a content-length one)
+- Optional, include only if genuinely strong: Technical Skills, Soft Skills, Relevant Training, Achievements
+- Typical well-curated shape: ~3–4 skill categories × ~4 items, ~6 soft skills, ~4 roles (one synthesized overview each), however many projects are genuinely strong × ~2 bullets, ~3 certs — guidance for what good curation looks like, not limits to enforce
+- 1-page fit is now the renderer's job (Phase 5 auto-shrink-to-fit), not content's job — see architecture.md ADR-006
+
+**Formatting system, added 2026-07-02 — apply to every section, no exceptions.** Sections were drifting into random per-section formatting (some bulleted, some stacked plain lines; some bold labels, some not) with no underlying logic — direct user feedback. Every section is one of exactly two patterns:
+- **Pattern A — itemized list** (2+ discrete parallel entries: skill categories, certs, achievements): `•` bullet, **bold the entry's label** (category name / cert name / achievement title), then the detail. Applies to: Technical Skills, Relevant Training, Achievements, and Projects' sub-bullets sit under this pattern too (though the project name bolding lives in the entry-title line above them, not the bullets themselves).
+- **Pattern B — flowing content** (one paragraph or one line, not a list of parallel items): no bullet. Applies to: Summary, Experience's overview paragraph (though its company/title header line above it is its own bold+italic element — see Phase 4 Experience format), Soft Skills (a single comma/middot-separated descriptor line — intentionally not itemized, these are single terms not label:detail pairs), Education (bold the degree as the "label," rest of the line is detail, same convention as Pattern A's bold-then-detail shape, just without a bullet since it's one line).
+When in doubt for a new/unusual master.md entry, ask: is this one of several parallel items, or one flowing statement? That answers which pattern it uses — don't invent a third shape.
 
 ### Phase 5: Render PDF
 
@@ -177,13 +183,24 @@ Run:
   ~/.claude/resume/tailored/[slug]-[date]/resume.pdf
 ```
 
+**Read stderr, not just stdout.** The renderer's auto-fit (architecture.md ADR-006) prints one of three things worth surfacing to Giles, not silently swallowing:
+- `WARNING: content still spans N pages...` — content overflows even at the smallest legible size. Trim content.
+- `NOTE: page is only ~X% full...` — content is sparse but plausibly fixable. Suggest the next-strongest Project from master.md or expanding an existing entry.
+- `FLAG: page is only ~X% full even at the 13pt ceiling...` — **added 2026-07-02, per explicit user direction.** Content was never close to overflowing at any size in the ladder. Surface this directly and honestly: this isn't a formatting gap, it's a signal that master.md may not have enough genuinely JD-relevant content for this role. Say so plainly and let Giles make the call on whether to proceed — don't pad the resume to hide it, and don't silently proceed as if the sparse output were normal.
+
 ### Phase 6: Cover Letter (if requested)
 
-Write `~/.claude/resume/tailored/[slug]-[date]/cover-letter.md`:
+**Mandatory pre-step, added 2026-07-02 — do this before drafting Paragraph 2.** Do NOT synthesize the "strongest match" paragraph from research.md/master.md facts alone — restating resume bullets in prose is what makes a letter read as generic/AI-written (confirmed both by direct user feedback on a real draft, and by Ask a Manager's core finding that a good letter tells the reader something the resume can't). Pick the single most relevant experience, then explicitly ask the user for the real story behind it: what was hard, surprising, or required a judgment call — not just the outcome. Draft Paragraph 2 from their actual words. Also ask, separately, why this company/role specifically — don't infer or invent motivation; if the honest reason is sensitive or shouldn't appear verbatim in the letter (e.g. career-strategy calculus), ask what can be said instead rather than fabricating generic enthusiasm.
+
+Also, before finalizing, re-read the drafted opener against the Paragraph 1 rule below — "I'm writing to apply for..." and close variants (e.g. "I am excited to apply...") are easy to slip into even when the rule is known; this happened in the same 2026-07-02 session that produced the rule.
+
+Write `~/.claude/resume/tailored/[slug]-[date]/cover-letter.md`. **Use blank-line separation between the name/contact/date lines** (same rule as the resume header, SKILL.md Phase 4) — without it, markdown collapses consecutive lines into one paragraph with soft line breaks, which most renderers (including this one) flatten into a single run-on line instead of three. This exact bug shipped once already (2026-07-02) before being caught.
 
 ```
-[Name]
+# [Name]
+
 [email]  |  [phone]
+
 [Date]
 
 [Hiring Manager Name], [Title] at [Company]   ← use researched name if found

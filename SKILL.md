@@ -56,6 +56,8 @@ Write `~/.claude/resume/tailored/[slug]-[date]/research.md` with all findings.
 
 Read `~/.claude/resume/master.md` in full.
 
+**Suppressed entries:** an entry whose heading is followed by `<!-- suppress: ... -->` is kept in the master for the record only. Never include it, mention it, or draw facts from it in the resume, cover letter or summary, however relevant it looks. (Added 2026-10-07: Snorkel AI and Nourished Mobile App.)
+
 **Extract from JD:**
 - Job title → use verbatim as the header title line (all-caps). If ambiguous, infer the best match.
 - Semantic concepts: domain areas, responsibility types, tech clusters, cultural signals
@@ -77,7 +79,7 @@ relevance: 1.0 = direct match | 0.6 = transferable | 0.3 = adjacent
 - The Engineering & Domain Knowledge skills category
 - The cover letter unique angle paragraph
 
-**Security clearance signal:** If JD is for a government/defense/cleared role → surface "Security Clearance: [security_clearance]" prominently in the header contact block.
+**Security clearance signal:** If JD is for a government/defense/cleared role → surface "Security Clearance: [security_clearance from master.md]" prominently in the header contact block.
 
 **Mirror company language:** Use their terminology, not generic buzzwords.
 
@@ -88,13 +90,15 @@ Write `~/.claude/resume/tailored/[slug]-[date]/resume.md` using this exact templ
 **CRITICAL FORMATTING RULE:** Every paragraph element (bullets, project titles, achievement lines) MUST be separated by a blank line. Items within the same markdown block merge into a single visual line. One blank line = one visual paragraph break.
 
 ```markdown
-# GIL ESKAYO
+# [name from master.md frontmatter — ALL CAPS]
 
 [JD-DERIVED TITLE — ALL CAPS]
 
-gileskayo.me  |  geskayo@gmail.com  |  linkedin.com/in/gileskayo
+[portfolio]  |  [email]  |  [linkedin]
 
-(000) 000-0000  |  github.com/G-Eskayo  |  U.S. Citizen[  |  Security Clearance: [security_clearance] — if defense/gov role]
+[phone]  |  [github]  |  [citizenship][  |  Security Clearance: [security_clearance] — if defense/gov role]
+
+<!-- Contact fields come from ~/.claude/resume/master.md frontmatter (strip https://). Never hardcode them here: this file is public. -->
 
 [SUMMARY — 2–3 sentences. Tailored to the specific role. No "I am a..." opener. Lead with what you build, then the crossover if relevant, then the current work.]
 
